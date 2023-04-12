@@ -103,6 +103,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Initialize new animal
         new_animal = None
         new_location = None
+        new_customer = None
         # Add a new animal to the list. Don't worry about
         # the orange squiggle, you'll define the create_animal
         # function next.
@@ -125,6 +126,7 @@ class HandleRequests(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(new_location).encode())
 
         if resource == "customers":
+            self._set_headers(201)
             new_customer = create_customer(post_body)
 
             self.wfile.write(json.dumps(new_customer).encode())
@@ -200,35 +202,40 @@ class HandleRequests(BaseHTTPRequestHandler):
         """this function will delete items
         """
         # Set a 204 response code
-        self._set_headers(204)
 
         # Parse the URL
         (resource, id) = self.parse_url(self.path)
 
         # Delete a single animal from the list
         if resource == "animals":
+            self._set_headers(204)
             delete_animal(id)
 
         # Encode the new animal and send in response
             self.wfile.write("".encode())
 
         if resource == "locations":
+            self._set_headers(204)
             delete_location(id)
 
         # Encode the new animal and send in response
             self.wfile.write("".encode())
 
         if resource == "employees":
+            self._set_headers(204)
             delete_employee(id)
 
         # Encode the new animal and send in response
             self.wfile.write("".encode())
 
         if resource == "customers":
-            delete_customer(id)
+            self._set_headers(405)
+            message = {
+                    "message": f'{"Deleting customers requires contacting the company directly"}'
+                }
 
         # Encode the new animal and send in response
-            self.wfile.write("".encode())
+            self.wfile.write(json.dumps(message).encode())
 
 # This function is not inside the class. It is the starting
 # point of this application.
