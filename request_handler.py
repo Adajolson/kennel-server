@@ -45,7 +45,7 @@ class HandleRequests(BaseHTTPRequestHandler):
     def do_GET(self):
         """getter function
         """
-        self._set_headers(200)
+        
         response = {}  # Default response
 
         # Parse the URL and capture the tuple that is returned
@@ -54,8 +54,9 @@ class HandleRequests(BaseHTTPRequestHandler):
         if resource == "animals":
             if id is not None:
                 response = get_single_animal(id)
-
+                
             else:
+                # response =  self._set_headers(404), { "message": f"Animal {id} is out playing right now" }
                 response = get_all_animals()
 
         if resource == "locations":
@@ -78,7 +79,10 @@ class HandleRequests(BaseHTTPRequestHandler):
 
             else:
                 response = get_all_customers()
-
+        if response is not None:
+            self._set_headers(200)
+        else:
+            self._set_headers(404)
         self.wfile.write(json.dumps(response).encode())
 
 
@@ -87,7 +91,6 @@ class HandleRequests(BaseHTTPRequestHandler):
     def do_POST(self):
         """this is the post function
         """
-        self._set_headers(201)
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
 
@@ -104,12 +107,19 @@ class HandleRequests(BaseHTTPRequestHandler):
         # the orange squiggle, you'll define the create_animal
         # function next.
         if resource == "animals":
+            self._set_headers(201)
             new_animal = create_animal(post_body)
-
             self.wfile.write(json.dumps(new_animal).encode())
 
         if resource == "locations":
-            new_location = create_location(post_body)
+            if "name" in post_body and "address" in post_body:
+                self._set_headers(201)
+                new_location = create_location(post_body)
+            else:
+                self._set_headers(400)
+                new_location = {
+                    "message": f'{"name is required" if "name" not in post_body else ""} {"address is required" if "address" not in post_body else ""}'
+                }
 
         # Encode the new animal and send in response
             self.wfile.write(json.dumps(new_location).encode())
