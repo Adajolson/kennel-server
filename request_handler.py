@@ -6,6 +6,26 @@ from views import create_location, create_animal,  create_customer, create_emplo
 from views import delete_animal, delete_customer, delete_employee, delete_location
 from views import update_animal, update_customer, update_employee, update_location
 
+method_mapper = { 
+    "animals": {
+        "all": get_all_animals,
+        "single": get_single_animal
+    },
+    "locations": {
+        "all": get_all_locations,
+        "single": get_single_location
+    },
+    "customers": {
+        "all": get_all_customers,
+        "single": get_single_customer
+    },
+    "employees": {
+        "all": get_all_employees,
+        "single": get_single_employee
+    }
+}
+
+
 
 # Here's a class. It inherits from another class.
 # For now, think of a class as a container for functions that
@@ -39,47 +59,65 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         return (resource, id)  # This is a tuple
     # Here's a class function
+    def get_all_or_single(self, resource, id):
+        """This function combines all the get functions into one"""
+        if id is not None:
+            response = method_mapper[resource]["single"](id)
 
+            if response is not None:
+                self._set_headers(200)
+            else:
+                self._set_headers(404)
+                response = ''
+        else:
+            self._set_headers(200)
+            response = method_mapper[resource]["all"]()
+
+        return response
     # Here's a method on the class that overrides the parent's method.
     # It handles any GET request.
     def do_GET(self):
         """getter function
         """
-        self._set_headers(200)
-        response = {}  # Default response
-
-        # Parse the URL and capture the tuple that is returned
+        response = None
         (resource, id) = self.parse_url(self.path)
-
-        if resource == "animals":
-            if id is not None:
-                response = get_single_animal(id)
-
-            else:
-                response = get_all_animals()
-
-        if resource == "locations":
-            if id is not None:
-                response = get_single_location(id)
-
-            else:
-                response = get_all_locations()
-
-        if resource == "employees":
-            if id is not None:
-                response = get_single_employee(id)
-
-            else:
-                response = get_all_employees()
-
-        if resource == "customers":
-            if id is not None:
-                response = get_single_customer(id)
-
-            else:
-                response = get_all_customers()
-
+        response = self.get_all_or_single(resource, id)
         self.wfile.write(json.dumps(response).encode())
+        # self._set_headers(200)
+        # response = {}  # Default response
+
+        # # Parse the URL and capture the tuple that is returned
+        # (resource, id) = self.parse_url(self.path)
+
+        # if resource == "animals":
+        #     if id is not None:
+        #         response = get_single_animal(id)
+
+        #     else:
+        #         response = get_all_animals()
+
+        # if resource == "locations":
+        #     if id is not None:
+        #         response = get_single_location(id)
+
+        #     else:
+        #         response = get_all_locations()
+
+        # if resource == "employees":
+        #     if id is not None:
+        #         response = get_single_employee(id)
+
+        #     else:
+        #         response = get_all_employees()
+
+        # if resource == "customers":
+        #     if id is not None:
+        #         response = get_single_customer(id)
+
+        #     else:
+        #         response = get_all_customers()
+
+        # self.wfile.write(json.dumps(response).encode())
 
 
     # Here's a method on the class that overrides the parent's method.
