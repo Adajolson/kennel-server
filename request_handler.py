@@ -6,7 +6,7 @@ from views import create_location, create_animal,  create_customer, create_emplo
 from views import delete_animal, delete_customer, delete_employee, delete_location
 from views import update_animal, update_customer, update_employee, update_location
 
-method_mapper = { 
+method_mapper = {
     "animals": {
         "all": get_all_animals,
         "single": get_single_animal
