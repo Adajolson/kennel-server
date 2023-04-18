@@ -1,3 +1,7 @@
+import sqlite3
+import json
+from models import Employee
+
 EMPLOYEES = [
     {
         "id": 1,
@@ -5,27 +9,89 @@ EMPLOYEES = [
     }
 ]
 
+# def get_all_employees():
+#     """This function gets all employees
+#     """
+#     return EMPLOYEES
+
 def get_all_employees():
-    """This function gets all employees
-    """
-    return EMPLOYEES
+    """This function gets all employees"""
+    # Open a connection to the database
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+
+        # Just use these. It's a Black Box.
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        SELECT
+            a.id,
+            a.name
+            a.address
+            a.location_id
+        FROM employee a
+        """)
+
+        # Initialize an empty list to hold all employee representations
+        employees = []
+
+        # Convert rows of data into a Python list
+        dataset = db_cursor.fetchall()
+
+        # Iterate list of data returned from database
+        for row in dataset:
+
+            # Create an employee instance from the current row.
+            # Note that the database fields are specified in
+            # exact order of the parameters defined in the
+            # Employee class above.
+            employee = Employee(row['id'], row['name'], row['address'], row['location_id'] )
+            employees.append(employee.__dict__)
+
+    return employees
 
 # Function with a single parameter
+# def get_single_employee(id):
+#     """This function gets a single employee
+#     """
+#     # Variable to hold the found employee, if it exists
+#     requested_employee = None
+
+#     # Iterate the EMPLOYEES list above. Very similar to the
+#     # for..of loops you used in JavaScript.
+#     for employee in EMPLOYEES:
+#         # Dictionaries in Python use [] notation to find a key
+#         # instead of the dot notation that JavaScript used.
+#         if employee["id"] == id:
+#             requested_employee = employee
+
+#     return requested_employee
+
 def get_single_employee(id):
-    """This function gets a single employee
-    """
-    # Variable to hold the found employee, if it exists
-    requested_employee = None
+    """function that gets a single employee"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
 
-    # Iterate the EMPLOYEES list above. Very similar to the
-    # for..of loops you used in JavaScript.
-    for employee in EMPLOYEES:
-        # Dictionaries in Python use [] notation to find a key
-        # instead of the dot notation that JavaScript used.
-        if employee["id"] == id:
-            requested_employee = employee
+        # Use a ? parameter to inject a variable's value
+        # into the SQL statement.
+        db_cursor.execute("""
+        SELECT
+            a.id,
+            a.name
+            a.address
+            a.location_id
+        FROM employee a
+        WHERE a.id = ?
+        """, ( id, ))
 
-    return requested_employee
+        # Load the single result into memory
+        data = db_cursor.fetchone()
+
+        # Create an employee instance from the current row
+        employee = Employee(data['id'], data['name'], data['address'], data['location_id'])
+        return employee.__dict__
 
 def create_employee(employee):
     """this function goes in the POST function in the request handler module
@@ -72,3 +138,29 @@ def update_employee(id, new_employee):
             # Found the employee. Update the value.
             EMPLOYEES[index] = new_employee
             break
+
+def get_employees_by_location_id(location_id):
+
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        select
+            a.id,
+            a.name,
+            a.address,
+            a.location_id
+        from employee a
+        WHERE a.location_id = ?
+        """, ( location_id, ))
+
+        employees = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            employee = Employee(row['id'], row['name'], row['address'], row['location_id'])
+            employees.append(employee.__dict__)
+
+    return employees
