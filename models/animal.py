@@ -1,5 +1,5 @@
 class Animal():
-
+    """Stores relevant data for our Animal Class in fields."""
     # Class initializer. It has 5 custom parameters, with the
     # special `self` parameter that every method on a class
     # needs as the first parameter.
@@ -10,3 +10,5 @@ class Animal():
         self.status = status
         self.location_id = location_id
         self.customer_id = customer_id
+        self.location = None
+        self.customer = None
