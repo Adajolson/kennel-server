@@ -1,6 +1,6 @@
 import sqlite3
 import json
-from models import Employee
+from models import Employee, Location
 
 EMPLOYEES = [
     {
@@ -26,11 +26,16 @@ def get_all_employees():
         # Write the SQL query to get the information you want
         db_cursor.execute("""
         SELECT
-            a.id,
-            a.name
-            a.address
-            a.location_id
-        FROM employee a
+            e.id,
+            e.name,
+            e.address,
+            e.location_id,
+            l.id location_id,
+            l.name location_name,
+            l.address location_address
+        FROM employee e
+        Join location l
+            ON l.id = e.location_id
         """)
 
         # Initialize an empty list to hold all employee representations
@@ -47,6 +52,15 @@ def get_all_employees():
             # exact order of the parameters defined in the
             # Employee class above.
             employee = Employee(row['id'], row['name'], row['address'], row['location_id'] )
+
+            location = Location(row['location_id'],
+                                row['location_name'],
+                                row['location_address'])
+
+            # Add the dictionary representation of the location to the employee
+            employee.location = location.__dict__
+
+            # Add the dictionary representation of the employee to the list
             employees.append(employee.__dict__)
 
     return employees
@@ -78,12 +92,12 @@ def get_single_employee(id):
         # into the SQL statement.
         db_cursor.execute("""
         SELECT
-            a.id,
-            a.name
-            a.address
-            a.location_id
-        FROM employee a
-        WHERE a.id = ?
+            e.id,
+            e.name,
+            e.address,
+            e.location_id
+        FROM employee e
+        WHERE e.id = ?
         """, ( id, ))
 
         # Load the single result into memory
@@ -140,7 +154,7 @@ def update_employee(id, new_employee):
             break
 
 def get_employees_by_location_id(location_id):
-
+    """This is a function that gets employees by location"""
     with sqlite3.connect("./kennel.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
         db_cursor = conn.cursor()
@@ -148,12 +162,12 @@ def get_employees_by_location_id(location_id):
         # Write the SQL query to get the information you want
         db_cursor.execute("""
         select
-            a.id,
-            a.name,
-            a.address,
-            a.location_id
-        from employee a
-        WHERE a.location_id = ?
+            e.id,
+            e.name,
+            e.address,
+            e.location_id
+        from employee e
+        WHERE e.location_id = ?
         """, ( location_id, ))
 
         employees = []

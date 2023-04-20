@@ -64,7 +64,6 @@ class HandleRequests(BaseHTTPRequestHandler):
     # def do_GET(self):
     #     """getter function
     #     """
-        
     #     response = {}  # Default response
 
     #     # Parse the URL and capture the tuple that is returned
@@ -73,7 +72,6 @@ class HandleRequests(BaseHTTPRequestHandler):
     #     if resource == "animals":
     #         if id is not None:
     #             response = get_single_animal(id)
-                
     #         else:
     #             # response =  self._set_headers(404), { "message": f"Animal {id} is out playing right now" }
     #             response = get_all_animals()
@@ -105,6 +103,7 @@ class HandleRequests(BaseHTTPRequestHandler):
     #     self.wfile.write(json.dumps(response).encode())
 
     def do_GET(self):
+        """This is the Get method to get the data from the tables"""
         self._set_headers(200)
 
         response = {}
@@ -116,16 +115,26 @@ class HandleRequests(BaseHTTPRequestHandler):
         if '?' not in self.path:
             ( resource, id ) = parsed
 
+            if resource == "customers":
+                if id is not None:
+                    response = get_single_customer(id)
+                else:
+                    response = get_all_customers()
             if resource == "animals":
                 if id is not None:
                     response = get_single_animal(id)
                 else:
                     response = get_all_animals()
-            elif resource == "customers":
+            if resource == "locations":
                 if id is not None:
-                    response = get_single_customer(id)
+                    response = get_single_location(id)
                 else:
-                    response = get_all_customers()
+                    response = get_all_locations()
+            if resource == "employees":
+                if id is not None:
+                    response = get_single_employee(id)
+                else:
+                    response = get_all_employees()
 
         else: # There is a ? in the path, run the query param functions
             (resource, query) = parsed
@@ -193,10 +202,44 @@ class HandleRequests(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(new_employee).encode())
 
     # A method that handles any PUT request.
+    # def do_PUT(self):
+    #     """This is the PUT function
+    #     """
+    #     self._set_headers(204)
+    #     content_len = int(self.headers.get('content-length', 0))
+    #     post_body = self.rfile.read(content_len)
+    #     post_body = json.loads(post_body)
+
+    #     # Parse the URL
+    #     (resource, id) = self.parse_url(self.path)
+
+    #     # Delete a single animal from the list
+    #     if resource == "animals":
+    #         update_animal(id, post_body)
+
+    #     # Encode the new animal and send in response
+    #     self.wfile.write("".encode())
+
+    #     if resource == "employees":
+    #         update_employee(id, post_body)
+
+    #     # Encode the new animal and send in response
+    #     self.wfile.write("".encode())
+
+    #     if resource == "customers":
+    #         update_customer(id, post_body)
+
+    #     # Encode the new animal and send in response
+    #     self.wfile.write("".encode())
+
+    #     if resource == "locations":
+    #         update_location(id, post_body)
+
+    #     # Encode the new animal and send in response
+    #     self.wfile.write("".encode())
+
     def do_PUT(self):
-        """This is the PUT function
-        """
-        self._set_headers(204)
+        """This method updates an existing dictionary"""
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
         post_body = json.loads(post_body)
@@ -204,29 +247,17 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Parse the URL
         (resource, id) = self.parse_url(self.path)
 
-        # Delete a single animal from the list
+        success = False
+
         if resource == "animals":
-            update_animal(id, post_body)
+            success = update_animal(id, post_body)
+        # rest of the elif's
 
-        # Encode the new animal and send in response
-        self.wfile.write("".encode())
+        if success:
+            self._set_headers(204)
+        else:
+            self._set_headers(404)
 
-        if resource == "employees":
-            update_employee(id, post_body)
-
-        # Encode the new animal and send in response
-        self.wfile.write("".encode())
-
-        if resource == "customers":
-            update_customer(id, post_body)
-
-        # Encode the new animal and send in response
-        self.wfile.write("".encode())
-
-        if resource == "locations":
-            update_location(id, post_body)
-
-        # Encode the new animal and send in response
         self.wfile.write("".encode())
 
     def _set_headers(self, status):
