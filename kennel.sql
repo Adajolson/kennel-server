@@ -118,3 +118,5 @@ UPDATE Animal
 	SET
 		name = "Snickers"
 	WHERE id = 1
+
+SELECT * FROM Animal ORDER BY id DESC;
